@@ -72,3 +72,16 @@ class Client(object):
         data = await cur.fetchone()
         user = Users(*data)
         return user
+
+    @with_connection_and_cursor
+    async def user_update_masterkey_lifetime(self, cur: Cursor, telegram_id: int):
+        await cur.execute(
+            """
+                UPDATE Users
+                    SET
+                        masterkey_lifetime=NOW()
+                    WHERE 
+                        telegram_id = %s
+            """,
+            (telegram_id,),
+        )
