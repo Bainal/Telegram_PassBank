@@ -99,3 +99,15 @@ class Client(object):
                            """,
             (service_name, login, password, telegram_id),
         )
+
+    @with_connection_and_cursor
+    async def password_delete(self, cur: Cursor, telegram_id: int, id: int):
+        await cur.execute(
+            """
+                DELETE FROM Passwords 
+                WHERE id = %s AND u.telegram_id = %s
+                FROM Users u
+                    WHERE u.telegram_id = %s;
+                           """,
+            (id, telegram_id),
+        )
