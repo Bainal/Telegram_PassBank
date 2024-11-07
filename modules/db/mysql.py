@@ -85,3 +85,17 @@ class Client(object):
             """,
             (telegram_id,),
         )
+
+    @with_connection_and_cursor
+    async def password_add(
+        self, cur: Cursor, telegram_id: int, service_name: str, login: str, password: str
+    ):
+        await cur.execute(
+            """
+                INSERT INTO Passwords (user, service_name, login, password)
+                    SELECT u.id, %s, %s, %s
+                FROM Users u
+                    WHERE u.telegram_id = %s;
+                           """,
+            (service_name, login, password, telegram_id),
+        )
