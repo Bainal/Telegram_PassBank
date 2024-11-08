@@ -32,4 +32,4 @@ async def start_check_timer(
     mysql_client: mysql.Client,
 ):
     while True:
-        pass
+        await asyncio.sleep(1)
