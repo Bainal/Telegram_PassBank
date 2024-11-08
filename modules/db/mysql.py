@@ -33,7 +33,7 @@ class Client(object):
             maxsize=5,
             autocommit=True,
         )
-        await self.create_setting()
+        # await self.create_setting()
 
     @with_connection_and_cursor
     async def create_setting(self, cur: Cursor):
