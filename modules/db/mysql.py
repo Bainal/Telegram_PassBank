@@ -79,11 +79,11 @@ class Client(object):
             """
                 UPDATE Users
                     SET
-                        masterkey_lifetime=NOW()
+                        masterkey_lifetime = %s
                     WHERE 
                         telegram_id = %s
             """,
-            (telegram_id,),
+            (datetime.now(), telegram_id),
         )
 
     @with_connection_and_cursor
