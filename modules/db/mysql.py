@@ -150,3 +150,17 @@ class Client(object):
         data = await cur.fetchone()
         password = Passwords(**data)
         return password
+
+    @with_connection_and_cursor
+    async def passwords_get_count(self, cur: Cursor, telegram_id: int) -> int:
+        await cur.execute(
+            """
+                SELECT COUNT(p.id)
+                    FROM Passwords p
+                    JOIN Users u ON u.id = p.user
+                    WHERE u.telegram_id = %s
+                          """,
+            (telegram_id,),
+        )
+        data = await cur.fetchone()
+        return data[0]
