@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Callable, TypeVar, cast
 from aiomysql import create_pool, Cursor
 from .settings import setting_insert_query, setting_insert_args
-from modules.common.my_class import Users
+from modules.common.my_class import Passwords, Users
 
 
 # Определяем универсальный тип, который будет представлять функцию
@@ -12,7 +12,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 def with_connection_and_cursor(func: F) -> F:
     async def wrapper(self, *args, **kwargs):
         async with self.pool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(dictionary=True) as cur:
                 # Вызов оригинальной функции с передачей соединения и курсора
                 return await func(self, cur, *args, **kwargs)
 
@@ -111,3 +111,42 @@ class Client(object):
                            """,
             (id, telegram_id),
         )
+
+    @with_connection_and_cursor
+    async def passwords_get(
+        self,
+        cur: Cursor,
+        telegram_id: int,
+        limit: int = 10,
+        offset: int = 0,
+        order_by: str = "id",  # id, service_name
+        sort_by: str = "ASC",  # ASC(Возрастание) or DESC(Убывание)
+    ):
+        await cur.execute(
+            """
+                SELECT p.id, p.service_name, p.login
+                    FROM Passwords p
+                    JOIN Users u ON u.telegram_id = p.user
+                    WHERE u.telegram_id = %s
+                    LIMIT %s OFFSET %s
+                    ORDER BY %s %s;
+                          """,
+            (telegram_id, limit, limit * offset, order_by, sort_by),
+        )
+        passwords_data = await cur.fetchall()
+        passwords = [Passwords(**data) for data in passwords_data]
+        return passwords
+
+    @with_connection_and_cursor
+    async def password_get_by_id(self, cur: Cursor, id: int):
+        await cur.execute(
+            """
+                SELECT id, user, service_name, login, password
+                    FROM Passwords
+                WHERE id = %s
+                          """,
+            (id,),
+        )
+        data = await cur.fetchone()
+        password = Passwords(**data)
+        return password
