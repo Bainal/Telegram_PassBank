@@ -163,4 +163,4 @@ class Client(object):
             (telegram_id,),
         )
         data = await cur.fetchone()
-        return data[0]
+        return data["COUNT(p.id)"]
