@@ -11,6 +11,7 @@ from aiogram.utils.i18n import lazy_gettext as __
 from modules.db import mysql
 from modules.config import configJson
 from modules.common.my_class import Users
+from modules.common import encryption
 
 from keyboards import keyboards
 import my_states
@@ -132,8 +133,14 @@ async def save(
         await callback.answer(text=f"Ошибка!\n{get_text("password_request")}", show_alert=True)
         return
     
-    await mysql_client.password_add(telegram_id=callback.from_user.id, service_name=user_data["service_name"], login=user_data["login"], password=user_data["password"])
-    await callback.answer(text="Пароль успешно сохранен!", show_alert=True)
+    new_password = encryption.encrypt_password(password=user_data["password"], user_password=user_data["master_key"])
+    await mysql_client.password_add(
+        telegram_id=callback.from_user.id,
+        service_name=user_data["service_name"],
+        login=user_data["login"],
+        password=encryption.encrypt_password(password=user_data["password"], user_password=user_data["master_key"])
+    )
+    await callback.answer(text="Пароль зашифрован и успешно сохранен!", show_alert=True)
     
     await bot.delete_message(chat_id=callback.from_user.id, message_id=user_data["bot_last_message"])
     
