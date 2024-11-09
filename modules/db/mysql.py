@@ -70,7 +70,7 @@ class Client(object):
             (telegram_id,),
         )
         data = await cur.fetchone()
-        user = Users(*data)
+        user = Users(**data)
         return user
 
     @with_connection_and_cursor
