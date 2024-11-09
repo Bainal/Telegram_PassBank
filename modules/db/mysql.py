@@ -128,8 +128,8 @@ class Client(object):
                     FROM Passwords p
                     JOIN Users u ON u.id = p.user
                     WHERE u.telegram_id = %s
-                    LIMIT %s OFFSET %s
-                    ORDER BY {order_by} {sort_by};
+                    ORDER BY {order_by} {sort_by}
+                    LIMIT %s OFFSET %s;
                           """,
             (telegram_id, limit, limit * offset),
         )
