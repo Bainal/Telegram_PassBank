@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Callable, TypeVar, cast
-from aiomysql import create_pool, Cursor
+from aiomysql import create_pool, Cursor, DictCursor
 from .settings import setting_insert_query, setting_insert_args
 from modules.common.my_class import Passwords, Users
 
@@ -12,7 +12,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 def with_connection_and_cursor(func: F) -> F:
     async def wrapper(self, *args, **kwargs):
         async with self.pool.acquire() as conn:
-            async with conn.cursor(dictionary=True) as cur:
+            async with conn.cursor(DictCursor) as cur:
                 # Вызов оригинальной функции с передачей соединения и курсора
                 return await func(self, cur, *args, **kwargs)
 
