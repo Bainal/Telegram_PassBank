@@ -12,12 +12,25 @@ def get_main_reply_keyboard() -> aiogram.types.ReplyKeyboardMarkup:
 def get_entering_data_inline_keyboard(service_name: str, login: str, password: str) -> aiogram.types.InlineKeyboardMarkup:
     buttons = [
         [
-            InlineKeyboardButton(text=("Площадка" if service_name == None else service_name), callback_data="service_name_cb"),
-            InlineKeyboardButton(text=("Логин" if login == None else login), callback_data="login_cb"),
-            InlineKeyboardButton(text=("Пароль" if password == None else password), callback_data="password_cb")
+            InlineKeyboardButton(
+                text=("Площадка" if service_name == None else service_name),
+                callback_data="entering_service_name"
+            )
         ],
         [
-            InlineKeyboardButton(text="Назад", callback_data="back_cb"),
+            InlineKeyboardButton(
+                text=("Логин" if login == None else login),
+                callback_data="entering_login"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text=("Пароль" if password == None else password),
+                callback_data="entering_password"
+            )
+        ],
+        [
+            InlineKeyboardButton(text="Выход", callback_data="exit_cb"),
             InlineKeyboardButton(text="Сохранить", callback_data="save_cb")
         ]
     ]
