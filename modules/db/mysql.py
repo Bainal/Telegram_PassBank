@@ -123,15 +123,15 @@ class Client(object):
         sort_by: str = "ASC",  # ASC(Возрастание) or DESC(Убывание)
     ):
         await cur.execute(
-            """
+            f"""
                 SELECT p.id, p.service_name, p.login
                     FROM Passwords p
                     JOIN Users u ON u.id = p.user
                     WHERE u.telegram_id = %s
                     LIMIT %s OFFSET %s
-                    ORDER BY %s %s;
+                    ORDER BY {order_by} {sort_by};
                           """,
-            (telegram_id, limit, limit * offset, order_by, sort_by),
+            (telegram_id, limit, limit * offset),
         )
         passwords_data = await cur.fetchall()
         passwords = [Passwords(**data) for data in passwords_data]
