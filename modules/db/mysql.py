@@ -126,7 +126,7 @@ class Client(object):
             """
                 SELECT p.id, p.service_name, p.login
                     FROM Passwords p
-                    JOIN Users u ON u.telegram_id = p.user
+                    JOIN Users u ON u.id = p.user
                     WHERE u.telegram_id = %s
                     LIMIT %s OFFSET %s
                     ORDER BY %s %s;
