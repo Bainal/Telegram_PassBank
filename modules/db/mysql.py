@@ -104,10 +104,11 @@ class Client(object):
     async def password_delete(self, cur: Cursor, telegram_id: int, id: int):
         await cur.execute(
             """
-                DELETE FROM Passwords 
-                WHERE id = %s AND u.telegram_id = %s
-                FROM Users u
-                    WHERE u.telegram_id = %s;
+                DELETE p
+                    FROM Passwords p
+                    INNER JOIN Users u ON p.user = u.id
+                    WHERE p.id = %s AND u.telegram_id = %s;
+
                            """,
             (id, telegram_id),
         )
