@@ -183,5 +183,5 @@ class Client(object):
                     p.id = %s
                     AND u.telegram_id = %s;
                            """,
-            (service_name, login, password, id, id, telegram_id),
+            (service_name, login, password, id, telegram_id),
         )
