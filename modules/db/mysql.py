@@ -165,3 +165,23 @@ class Client(object):
         )
         data = await cur.fetchone()
         return data["COUNT(p.id)"]
+
+    @with_connection_and_cursor
+    async def password_update(
+        self, cur: Cursor, id: int, telegram_id: int, service_name: str, login: str, password: str
+    ):
+        await cur.execute(
+            """
+                UPDATE
+                    Passwords
+                    INNER JOIN Users u ON p.user = u.id
+                SET
+                    service_name =%s,
+                    login =%s,
+                    PASSWORD =%s
+                WHERE
+                    p.id = %s
+                    AND u.telegram_id = %s;
+                           """,
+            (service_name, login, password, id, id, telegram_id),
+        )
