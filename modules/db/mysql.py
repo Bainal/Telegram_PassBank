@@ -173,7 +173,7 @@ class Client(object):
         await cur.execute(
             """
                 UPDATE
-                    Passwords
+                    Passwords p
                     INNER JOIN Users u ON p.user = u.id
                 SET
                     service_name =%s,
