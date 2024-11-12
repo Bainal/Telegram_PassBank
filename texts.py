@@ -4,6 +4,10 @@ TEXTS = {
     "service_name_request": "Введите название площадки",
     "login_request": "Введите логин",
     "password_request": "Введите пароль",
+    "id ASC": "по дате добавления",
+    "service_name ASC": "по алфавиту",
+    "id DESC": "обратно дате добавления",
+    "service_name DESC": "обратно алфавиту",
 }
 
 

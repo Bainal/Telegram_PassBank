@@ -1,4 +1,5 @@
 import aiogram
+import texts
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -6,8 +7,9 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 def get_main_reply_keyboard() -> aiogram.types.ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
     builder.button(text="Показать пароли")
+    builder.button(text="Сменить мастер-пароль")
     builder.button(text="Добавить пароль")
-    builder.adjust(2)
+    builder.adjust(3)
     return builder.as_markup(resize_keyboard=True)
 
 
@@ -42,7 +44,11 @@ def get_entering_data_inline_keyboard(
 
 
 def get_show_password_inline_keyboard(
-    buttons_texts: list, buttons_callbacks: list, current_page: int, total_pages: int
+    buttons_texts: list,
+    buttons_callbacks: list,
+    current_page: int,
+    total_pages: int,
+    sort_type: str,
 ) -> aiogram.types.InlineKeyboardMarkup:
     buttons = []
     # for i in range(0, len(buttons_texts)):
@@ -64,7 +70,7 @@ def get_show_password_inline_keyboard(
         )
 
     temp = []
-    if current_page != total_pages:
+    if total_pages != 1:
         if current_page != 1:
             temp.append(InlineKeyboardButton(text="Назад", callback_data="move_back_cb"))
         temp.append(
@@ -75,7 +81,14 @@ def get_show_password_inline_keyboard(
         if current_page != total_pages:
             temp.append(InlineKeyboardButton(text="Вперед", callback_data="move_next_cb"))
     buttons += [temp]
-    buttons += [[InlineKeyboardButton(text="Выход", callback_data="exit_cb")]]
+    buttons += [
+        [
+            InlineKeyboardButton(text="Выход", callback_data="exit_cb"),
+            InlineKeyboardButton(
+                text=f"Сортировка: {texts.get_text(sort_type)}", callback_data="change_sort_cb"
+            ),
+        ]
+    ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
