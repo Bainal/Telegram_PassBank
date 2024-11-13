@@ -19,7 +19,7 @@ from texts import get_text
 router = Router()
 
 
-@router.message(Command("start"), StateFilter(None))
+@router.message(Command("start"))
 async def main_menu(
     message: types.Message,
     state: FSMContext,

@@ -7,6 +7,7 @@ from modules.config import configJson
 from modules.db import mysql
 from functions.regular import start_regular_wrap
 from routers import routers as routs
+from middlewares.my_middlewares import CheckMasterKeyLifeTime
 
 
 async def on_start(
@@ -32,7 +33,9 @@ async def start_bot():
 
     bot = Bot(token=config_client.get_setting("settings", "token"))
     dp = Dispatcher()
-    
+
+    dp.update.outer_middleware.register(CheckMasterKeyLifeTime())
+
     dp.include_routers(*routs)
 
     dp.startup.register(on_start)

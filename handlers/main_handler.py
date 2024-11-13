@@ -1,7 +1,7 @@
 from datetime import datetime
 from math import ceil
 
-from aiogram import Router, F, types, Bot
+from aiogram import Router, F, types, Bot, flags
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -22,6 +22,7 @@ from aiogram.exceptions import TelegramBadRequest
 from cryptography.fernet import InvalidToken
 
 router = Router()
+
 sorts = {0: "id ASC", 1: "service_name ASC", 2: "id DESC", 3: "service_name DESC"}
 
 
@@ -56,37 +57,39 @@ async def show_passwords(
 ):
     await state.update_data(current_page=1, current_sort=0)
     passwords_count = await mysql_client.passwords_get_count(message.from_user.id)
-
     user_data = await state.get_data()
-
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=message.from_user.id,
-        limit=6,
-        offset=int(user_data["current_page"] - 1),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-
     await bot.delete_message(
         chat_id=message.from_user.id, message_id=user_data["bot_last_message"]
     )
+    if passwords_count != 0:
+        passwords: list = await mysql_client.passwords_get(
+            telegram_id=message.from_user.id,
+            limit=6,
+            offset=int(user_data["current_page"] - 1),
+            order_by=sorts[user_data["current_sort"]].split(" ")[0],
+            sort_by=sorts[user_data["current_sort"]].split(" ")[1],
+        )
+        buttons_texts = [
+            f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
+        ]
+        buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
 
-    bot_last_message = await message.answer(
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 6),
-            sorts[user_data["current_sort"]],
-        ),
-    )
+        bot_last_message = await message.answer(
+            text="Выберите сохраненную площадку или иное действие",
+            reply_markup=keyboards.get_show_password_inline_keyboard(
+                buttons_texts,
+                buttons_callbacks,
+                user_data["current_page"],
+                ceil(passwords_count / 6),
+                sorts[user_data["current_sort"]],
+            ),
+        )
+    else:
+        bot_last_message = await message.answer(
+            text="У вас не сохранено ни одного пароля!\nВоспользуйтесь функционалом ниже:",
+            reply_markup=keyboards.get_main_reply_keyboard(),
+        )
     await state.update_data(bot_last_message=bot_last_message.message_id)
-
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
 
 
@@ -231,10 +234,16 @@ async def show_password(
             show_alert=True,
         )
     else:
+        await state.update_data(
+            show_service_name=password.service_name,
+            show_login=password.login,
+            show_password=encryption.decrypt_password(password.password, user_data["master_key"]),
+        )
+        user_data = await state.get_data()
         await bot.edit_message_text(
             chat_id=callback.from_user.id,
             message_id=user_data["bot_last_message"],
-            text=f"Текст доступен для копирования\nПлощадка: `{password.service_name}`\nЛогин: `{password.login}`\nПароль: `{encryption.decrypt_password(password.password, user_data["master_key"])}`",
+            text=f"Текст доступен для копирования\nПлощадка: `{user_data["show_service_name"]}`\nЛогин: `{user_data["show_login"]}`\nПароль: `{user_data["show_password"]}`",
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboards.get_password_inline_keyboard(),
         )
@@ -286,7 +295,8 @@ async def delete_passwords(
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
         message_id=user_data["bot_last_message"],
-        text=callback.message.text + "\n\nПодтвердите удаление данных",
+        text=f"Текст доступен для копирования\nПлощадка: `{user_data["show_service_name"]}`\nЛогин: `{user_data["show_login"]}`\nПароль: `{user_data["show_password"]}`\n\nПодтвердите удаление данных",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboards.get_confirmation_inline_keyboard(),
     )
 
@@ -341,7 +351,8 @@ async def no_delete_passwords(
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
         message_id=user_data["bot_last_message"],
-        text=callback.message.text.replace("\n\nПодтвердите удаление данных", ""),
+        text=f"Текст доступен для копирования\nПлощадка: `{user_data["show_service_name"]}`\nЛогин: `{user_data["show_login"]}`\nПароль: `{user_data["show_password"]}`",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboards.get_password_inline_keyboard(),
     )
 
@@ -525,6 +536,10 @@ async def entering_password_exit(
                 "master_key": user_data["master_key"],
                 "choising_password_id": user_data["choising_password_id"],
                 "current_page": user_data["current_page"],
+                "current_sort": user_data["current_sort"],
+                "show_service_name": user_data["show_service_name"],
+                "show_login": user_data["show_login"],
+                "show_password": user_data["show_password"],
             }
         )
         await state.set_state(my_states.States.passed)
