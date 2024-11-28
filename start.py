@@ -34,9 +34,10 @@ async def start_bot():
     bot = Bot(token=config_client.get_setting("settings", "token"))
     dp = Dispatcher()
 
-    dp.update.outer_middleware.register(CheckMasterKeyLifeTime())
-
     dp.include_routers(*routs)
+
+    dp.message.middleware(CheckMasterKeyLifeTime())
+    dp.callback_query.middleware(CheckMasterKeyLifeTime())
 
     dp.startup.register(on_start)
 

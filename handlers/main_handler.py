@@ -26,6 +26,8 @@ router = Router()
 sorts = {0: "id ASC", 1: "service_name ASC", 2: "id DESC", 3: "service_name DESC"}
 
 
+@router.message(Command("change_master_key"), my_states.States.entering_all_data_change)
+@router.message(Command("change_master_key"), my_states.States.entering_all_data)
 @router.message(Command("change_master_key"), my_states.States.passed)
 @router.message(F.text == "Сменить мастер-пароль", my_states.States.passed)
 async def change_master_key(
@@ -47,6 +49,8 @@ async def change_master_key(
     await state.set_state(my_states.States.entering_master_key)
 
 
+@router.message(Command("show_passwords"), my_states.States.entering_all_data_change)
+@router.message(Command("show_passwords"), my_states.States.entering_all_data)
 @router.message(Command("show_passwords"), my_states.States.passed)
 @router.message(F.text == "Показать пароли", my_states.States.passed)
 async def show_passwords(
@@ -55,6 +59,7 @@ async def show_passwords(
     mysql_client: mysql.Client,
     bot: Bot,
 ):
+    await state.set_state(my_states.States.passed)
     await state.update_data(current_page=1, current_sort=0)
     passwords_count = await mysql_client.passwords_get_count(message.from_user.id)
     user_data = await state.get_data()
@@ -389,6 +394,8 @@ async def change_password(
     await state.set_state(my_states.States.entering_all_data_change)
 
 
+@router.message(Command("add_password"), my_states.States.entering_all_data_change)
+@router.message(Command("add_password"), my_states.States.entering_all_data)
 @router.message(Command("add_password"), my_states.States.passed)
 @router.message(F.text == "Добавить пароль", my_states.States.passed)
 async def add_password(

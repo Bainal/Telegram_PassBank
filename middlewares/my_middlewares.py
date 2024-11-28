@@ -3,7 +3,7 @@ from datetime import datetime
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
-from aiogram.dispatcher.flags import get_flag
+from aiogram.dispatcher.flags import get_flag, check_flags, extract_flags
 import aiogram.dispatcher.flags as BIBA
 
 from modules.common.my_class import Users
@@ -21,8 +21,10 @@ class CheckMasterKeyLifeTime(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         # authorization = get_flag(data, "authorization")
-        user_data = await data["state"].get_data()
+        a = extract_flags(handler=data)
+        temp = get_flag(data, "testing")
 
+        user_data = await data["state"].get_data()
         if await data["state"].get_state() == my_states.States.passed:
             telegram_user = data["event_from_user"]
             user: Users = await data["mysql_client"].user_get(telegram_id=telegram_user.id)

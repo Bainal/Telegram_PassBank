@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram import Router, F, types, Bot
+from aiogram import Router, F, types, Bot, flags
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
@@ -19,7 +19,8 @@ from texts import get_text
 router = Router()
 
 
-@router.message(Command("start"))
+@router.message(Command("start"), flags={"chat_action": "typing", "test": "test2"})
+@flags.testing
 async def main_menu(
     message: types.Message,
     state: FSMContext,
@@ -64,7 +65,7 @@ async def main_menu(
             await state.set_state(my_states.States.entering_master_key)
         else:
             if "bot_last_message" in user_data:
-                bot.delete_message(
+                await bot.delete_message(
                     chat_id=message.from_user.id,
                     message_id=user_data["bot_last_message"],
                 )
