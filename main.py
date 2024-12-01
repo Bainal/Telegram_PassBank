@@ -7,7 +7,7 @@ from functions.common import set_terminal_title
 
 async def main():
     logging.info("Либы загружены")
-    set_terminal_title("Bainal_TelegramBotTemplate")
+    set_terminal_title("Bainal_Telegram_PassBank")
     logging.info("Поменяли название")
     logging.info("Запускаем бота")
     await start_bot()
