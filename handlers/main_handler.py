@@ -9,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.i18n import lazy_gettext as __
 
+from functions.handlers_function import func_show_passwords
 from modules.db import mysql
 from modules.config import configJson
 from modules.common.my_class import Users
@@ -61,40 +62,12 @@ async def show_passwords(
 ):
     await state.set_state(my_states.States.passed)
     await state.update_data(current_page=1, current_sort=0)
-    passwords_count = await mysql_client.passwords_get_count(message.from_user.id)
     user_data = await state.get_data()
     await bot.delete_message(
         chat_id=message.from_user.id, message_id=user_data["bot_last_message"]
     )
-    if passwords_count != 0:
-        passwords: list = await mysql_client.passwords_get(
-            telegram_id=message.from_user.id,
-            limit=6,
-            offset=int(user_data["current_page"] - 1),
-            order_by=sorts[user_data["current_sort"]].split(" ")[0],
-            sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-        )
-        buttons_texts = [
-            f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-        ]
-        buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
+    await func_show_passwords(message=message, state=state, mysql_client=mysql_client)
 
-        bot_last_message = await message.answer(
-            text="Выберите сохраненную площадку или иное действие",
-            reply_markup=keyboards.get_show_password_inline_keyboard(
-                buttons_texts,
-                buttons_callbacks,
-                user_data["current_page"],
-                ceil(passwords_count / 6),
-                sorts[user_data["current_sort"]],
-            ),
-        )
-    else:
-        bot_last_message = await message.answer(
-            text="У вас не сохранено ни одного пароля!\nВоспользуйтесь функционалом ниже:",
-            reply_markup=keyboards.get_main_reply_keyboard(),
-        )
-    await state.update_data(bot_last_message=bot_last_message.message_id)
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
 
 
@@ -107,33 +80,7 @@ async def move_next_list_passwords(
 ):
     user_data = await state.get_data()
     await state.update_data(current_page=user_data["current_page"] + 1)
-    user_data = await state.get_data()
-
-    passwords_count = await mysql_client.passwords_get_count(callback.from_user.id)
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=callback.from_user.id,
-        limit=6,
-        offset=int(user_data["current_page"] - 1),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=user_data["bot_last_message"],
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 6),
-            sorts[user_data["current_sort"]],
-        ),
-    )
+    await func_show_passwords(callback=callback, state=state, mysql_client=mysql_client)
 
 
 @router.callback_query(F.data == "move_back_cb", my_states.States.passed)
@@ -145,33 +92,7 @@ async def move_next_list_passwords(
 ):
     user_data = await state.get_data()
     await state.update_data(current_page=user_data["current_page"] - 1)
-    user_data = await state.get_data()
-
-    passwords_count = await mysql_client.passwords_get_count(callback.from_user.id)
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=callback.from_user.id,
-        limit=6,
-        offset=int(user_data["current_page"] - 1),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=user_data["bot_last_message"],
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 6),
-            sorts[user_data["current_sort"]],
-        ),
-    )
+    await func_show_passwords(callback=callback, state=state, mysql_client=mysql_client)
 
 
 @router.callback_query(F.data == "change_sort_cb", my_states.States.passed)
@@ -188,31 +109,7 @@ async def change_sort_list_password(
         await state.update_data(current_sort=0)
     user_data = await state.get_data()
 
-    passwords_count = await mysql_client.passwords_get_count(callback.from_user.id)
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=callback.from_user.id,
-        limit=6,
-        offset=int(user_data["current_page"] - 1),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=user_data["bot_last_message"],
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 6),
-            sorts[user_data["current_sort"]],
-        ),
-    )
+    await func_show_passwords(callback=callback, state=state, mysql_client=mysql_client)
 
 
 @router.callback_query(F.data.startswith("password_"), my_states.States.passed)
@@ -261,32 +158,7 @@ async def back_to_show_passwords(
     mysql_client: mysql.Client,
     bot: Bot,
 ):
-    user_data = await state.get_data()
-    passwords_count = await mysql_client.passwords_get_count(callback.from_user.id)
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=callback.from_user.id,
-        limit=6,
-        offset=int(user_data["current_page"] - 1),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=user_data["bot_last_message"],
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 6),
-            sorts[user_data["current_sort"]],
-        ),
-    )
+    await func_show_passwords(callback=callback, state=state, mysql_client=mysql_client)
 
 
 @router.callback_query(F.data == "delete_cb", my_states.States.passed)
@@ -320,29 +192,7 @@ async def yes_delete_passwords(
     )
     await callback.answer("Пароль был успешно удален!", show_alert=True)
 
-    passwords_count = await mysql_client.passwords_get_count(callback.from_user.id)
-    passwords: list = await mysql_client.passwords_get(
-        telegram_id=callback.from_user.id,
-        limit=10,
-        offset=int(user_data["current_page"]),
-        order_by=sorts[user_data["current_sort"]].split(" ")[0],
-        sort_by=sorts[user_data["current_sort"]].split(" ")[1],
-    )
-    buttons_texts = [
-        f"{passwords[i].service_name} - {passwords[i].login}" for i in range(0, len(passwords))
-    ]
-    buttons_callbacks = [f"password_{passwords[i].id}" for i in range(0, len(passwords))]
-    await bot.edit_message_text(
-        chat_id=callback.from_user.id,
-        message_id=user_data["bot_last_message"],
-        text="Выберите сохраненную площадку или иное действие",
-        reply_markup=keyboards.get_show_password_inline_keyboard(
-            buttons_texts,
-            buttons_callbacks,
-            user_data["current_page"],
-            ceil(passwords_count / 10),
-        ),
-    )
+    await func_show_passwords(callback=callback, state=state, mysql_client=mysql_client)
 
 
 @router.callback_query(F.data == "answer_no_cb", my_states.States.passed)
