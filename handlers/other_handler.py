@@ -19,7 +19,7 @@ from texts import get_text
 router = Router()
 
 
-@router.message(F.text)
+@router.message()
 async def another_message(message: types.Message, state: FSMContext, bot: Bot):
     # user_data = await state.get_data()
 
