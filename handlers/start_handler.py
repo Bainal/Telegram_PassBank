@@ -19,8 +19,8 @@ from texts import get_text
 router = Router()
 
 
-@router.message(Command("start"), flags={"chat_action": "typing", "test": "test2"})
-@flags.testing
+@router.message(Command("start"))
+@flags.lifetime_check
 async def main_menu(
     message: types.Message,
     state: FSMContext,
@@ -129,13 +129,14 @@ async def registration_confirm_master_key(
 
         await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
 
-        _ = user_data.pop("master_key")
-        await state.set_data(user_data)
+        user_data.pop("master_key")
+        user_data["masterkey_lifetime"] = datetime.now()
+        await state.update_data(user_data)
         await state.set_state(my_states.States.first_entering_master_key)
 
 
 @router.message(F.text, my_states.States.entering_master_key)
-async def registration_confirm_master_key(
+async def entering_master_key(
     message: types.Message, state: FSMContext, mysql_client: mysql.Client, bot: Bot
 ):
     user_data = await state.get_data()
@@ -151,6 +152,6 @@ async def registration_confirm_master_key(
         chat_id=message.from_user.id, message_id=user_data["bot_last_message"]
     )
 
-    await state.update_data(master_key=message.text)
+    await state.update_data(master_key=message.text, masterkey_lifetime=datetime.now())
     await state.set_state(my_states.States.passed)
     await mysql_client.user_update_masterkey_lifetime(telegram_id=message.from_user.id)

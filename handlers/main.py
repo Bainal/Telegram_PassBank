@@ -24,7 +24,7 @@ async def menu(
 ):
     await message.answer(get_text("menu"), reply_markup=kb_start.get_menu_ik())
     await state.set_state()
-    await state.set_data({})
+    await state.update_data({})
 
 
 @router.callback_query(F.data == "check")

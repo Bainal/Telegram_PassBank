@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram import Router, F, types, Bot
+from aiogram import Router, F, types, Bot, flags
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
@@ -20,6 +20,7 @@ router = Router()
 
 
 @router.message()
+@flags.lifetime_check
 async def another_message(message: types.Message, state: FSMContext, bot: Bot):
     # user_data = await state.get_data()
 

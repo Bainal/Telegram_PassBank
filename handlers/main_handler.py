@@ -54,6 +54,7 @@ async def change_master_key(
 @router.message(Command("show_passwords"), my_states.States.entering_all_data)
 @router.message(Command("show_passwords"), my_states.States.passed)
 @router.message(F.text == "Показать пароли", my_states.States.passed)
+@flags.lifetime_check
 async def show_passwords(
     message: types.Message,
     state: FSMContext,
@@ -72,6 +73,7 @@ async def show_passwords(
 
 
 @router.callback_query(F.data == "move_next_cb", my_states.States.passed)
+@flags.lifetime_check
 async def move_next_list_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -84,6 +86,7 @@ async def move_next_list_passwords(
 
 
 @router.callback_query(F.data == "move_back_cb", my_states.States.passed)
+@flags.lifetime_check
 async def move_next_list_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -96,6 +99,7 @@ async def move_next_list_passwords(
 
 
 @router.callback_query(F.data == "change_sort_cb", my_states.States.passed)
+@flags.lifetime_check
 async def change_sort_list_password(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -113,6 +117,7 @@ async def change_sort_list_password(
 
 
 @router.callback_query(F.data.startswith("password_"), my_states.States.passed)
+@flags.lifetime_check
 async def show_password(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -152,6 +157,7 @@ async def show_password(
 
 
 @router.callback_query(F.data == "back_cb", my_states.States.passed)
+@flags.lifetime_check
 async def back_to_show_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -162,6 +168,7 @@ async def back_to_show_passwords(
 
 
 @router.callback_query(F.data == "delete_cb", my_states.States.passed)
+@flags.lifetime_check
 async def delete_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -179,6 +186,7 @@ async def delete_passwords(
 
 
 @router.callback_query(F.data == "answer_yes_cb", my_states.States.passed)
+@flags.lifetime_check
 async def yes_delete_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -196,6 +204,7 @@ async def yes_delete_passwords(
 
 
 @router.callback_query(F.data == "answer_no_cb", my_states.States.passed)
+@flags.lifetime_check
 async def no_delete_passwords(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -213,6 +222,7 @@ async def no_delete_passwords(
 
 
 @router.callback_query(F.data == "change_cb", my_states.States.passed)
+@flags.lifetime_check
 async def change_password(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -248,6 +258,7 @@ async def change_password(
 @router.message(Command("add_password"), my_states.States.entering_all_data)
 @router.message(Command("add_password"), my_states.States.passed)
 @router.message(F.text == "Добавить пароль", my_states.States.passed)
+@flags.lifetime_check
 async def add_password(
     message: types.Message, state: FSMContext, mysql_client: mysql.Client, bot: Bot
 ):
@@ -273,6 +284,7 @@ async def add_password(
 
 @router.message(F.text.split("\n").len() == 3, my_states.States.entering_all_data_change)
 @router.message(F.text.split("\n").len() == 3, my_states.States.entering_all_data)
+@flags.lifetime_check
 async def text_all_data(
     message: types.Message, state: FSMContext, mysql_client: mysql.Client, bot: Bot
 ):
@@ -300,6 +312,7 @@ async def text_all_data(
 
 @router.callback_query(F.data.startswith("entering_"), my_states.States.entering_all_data_change)
 @router.callback_query(F.data.startswith("entering_"), my_states.States.entering_all_data)
+@flags.lifetime_check
 async def change_data(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -319,6 +332,7 @@ async def change_data(
 
 @router.message(F.text, my_states.States.entering_data_change)
 @router.message(F.text, my_states.States.entering_data)
+@flags.lifetime_check
 async def entering_data(
     message: types.Message, state: FSMContext, mysql_client: mysql.Client, bot: Bot
 ):
@@ -350,6 +364,7 @@ async def entering_data(
 @router.callback_query(F.data == "exit_cb", my_states.States.passed)
 @router.callback_query(F.data == "exit_cb", my_states.States.entering_all_data_change)
 @router.callback_query(F.data == "exit_cb", my_states.States.entering_all_data)
+@flags.lifetime_check
 async def entering_password_exit(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -369,7 +384,7 @@ async def entering_password_exit(
             text="Воспользуйтесь функционалом ниже:",
             reply_markup=keyboards.get_main_reply_keyboard(),
         )
-        await state.set_data(
+        await state.update_data(
             {
                 "bot_last_message": bot_last_message.message_id,
                 "master_key": user_data["master_key"],
@@ -387,7 +402,7 @@ async def entering_password_exit(
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboards.get_password_inline_keyboard(),
         )
-        await state.set_data(
+        await state.update_data(
             {
                 "bot_last_message": user_data["bot_last_message"],
                 "master_key": user_data["master_key"],
@@ -404,6 +419,7 @@ async def entering_password_exit(
 
 @router.callback_query(F.data == "save_cb", my_states.States.entering_all_data_change)
 @router.callback_query(F.data == "save_cb", my_states.States.entering_all_data)
+@flags.lifetime_check
 async def save(
     callback: types.CallbackQuery,
     state: FSMContext,
@@ -441,7 +457,7 @@ async def save(
             text="Воспользуйтесь функционалом ниже:",
             reply_markup=keyboards.get_main_reply_keyboard(),
         )
-        await state.set_data(
+        await state.update_data(
             {
                 "bot_last_message": bot_last_message.message_id,
                 "master_key": user_data["master_key"],
@@ -470,7 +486,7 @@ async def save(
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboards.get_password_inline_keyboard(),
         )
-        await state.set_data(
+        await state.update_data(
             {
                 "bot_last_message": user_data["bot_last_message"],
                 "master_key": user_data["master_key"],
