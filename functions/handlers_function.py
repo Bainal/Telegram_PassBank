@@ -59,9 +59,18 @@ async def func_show_passwords(
                 ),
             )
     else:
-        bot_last_message = await message.answer(
-            text="У вас не сохранено ни одного пароля!\nВоспользуйтесь функционалом ниже:",
-            reply_markup=keyboards.get_main_reply_keyboard(),
-        )
+        if message:
+            bot_last_message = await message.answer(
+                text="У вас не сохранено ни одного пароля!\nВоспользуйтесь функционалом ниже:",
+                reply_markup=keyboards.get_main_reply_keyboard(),
+            )
+        elif callback:
+            await callback.message.answer(
+                text="У вас не сохранено ни одного пароля!\nВоспользуйтесь функционалом ниже:",
+                reply_markup=keyboards.get_main_reply_keyboard(),
+            )
+            await callback.message.delete()
+        else:
+            raise TypeError
     if message:
         await state.update_data(bot_last_message=bot_last_message.message_id)
