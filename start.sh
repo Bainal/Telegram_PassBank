@@ -12,7 +12,7 @@ fi
 
 if [ ! -d ".git" ]; then
     echo "Клонируем репозиторий..."
-    git clone https://github.com/IduZaToboy/Telegram_PassBank.git temp
+    git clone https://github.com/Bainal/Telegram_PassBank.git temp
     mv temp/.git ./
     rm -rf temp
     git checkout .
