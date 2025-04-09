@@ -3,8 +3,7 @@ from datetime import datetime
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message, CallbackQuery
-from aiogram.dispatcher.flags import get_flag, check_flags, extract_flags
-import aiogram.dispatcher.flags as BIBA
+from aiogram.dispatcher.flags import get_flag
 
 from modules.common.my_class import Users
 import my_states
