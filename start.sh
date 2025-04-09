@@ -18,7 +18,8 @@ if [ ! -d ".git" ]; then
     git checkout .
 else
     echo "Обновляем репозиторий..."
-    git pull
+    git fetch --all
+    git reset --hard HEAD
 fi
 
 # Проверяем, установлен ли python3-venv
