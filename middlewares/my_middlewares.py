@@ -35,6 +35,9 @@ class CheckMasterKeyLifeTime(BaseMiddleware):
             if (
                 "master_key" in user_data and time_diff.seconds <= 600
             ):  # Если пароль существует и он "живой"
+                await data["state"].update_data(
+                    masterkey_lifetime=datetime.now()
+                )  # Обновляем время жизни мастер кея
                 return await handler(event, data)  # Запускаем хендлер
             else:  # Иначе просим мастер кей
                 if isinstance(event, Message):
