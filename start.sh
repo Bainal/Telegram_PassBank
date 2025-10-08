@@ -4,12 +4,7 @@
 SCRIPT_DIR=$(dirname "$(realpath "$BASH_SOURCE")")
 cd "$SCRIPT_DIR"
 
-# Проверяем, установлен ли git
-if ! command -v git &> /dev/null; then
-    echo "Git не установлен. Устанавливаем git..."
-    sudo apt install git -y
-fi
-
+# Проверяем, является ли директория репозиторием Git
 if [ ! -d ".git" ]; then
     echo "Клонируем репозиторий..."
     git clone https://github.com/Bainal/Telegram_PassBank.git temp
@@ -18,7 +13,8 @@ if [ ! -d ".git" ]; then
     git checkout .
 else
     echo "Обновляем репозиторий..."
-    git pull
+    git fetch --all
+    git reset --hard origin/main
 fi
 
 # Проверяем, установлен ли python3-venv
