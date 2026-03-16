@@ -2,6 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.types import BotCommand
 from modules.config import configJson
 from modules.db import mysql
@@ -31,7 +32,11 @@ async def start_bot():
     database = config_client.get_setting("mysql", "database")
     await mysql_client.init_async(host=host, user=user, password=password, database=database)
 
-    bot = Bot(token=config_client.get_setting("settings", "token"))
+    # Ставим прокси, если прописано
+    proxy = config_client.get_setting("settings", "proxy")
+    session = AiohttpSession(proxy=proxy if proxy else None)
+
+    bot = Bot(token=config_client.get_setting("settings", "token"), session=session)
     dp = Dispatcher()
 
     dp.include_routers(*routs)
